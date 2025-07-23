@@ -1,7 +1,19 @@
 # Configuration file for jupyterhub.
-
+from dockerspawner import DockerSpawner
+import os
 c = get_config()  #noqa
 
+c.JupyterHub.spawner_class = DockerSpawner
+c.DockerSpawner.image = "quay.io/jupyter/pytorch-notebook:cuda12-latest"
+c.DockerSpawner.uid = os.getuid()
+c.DockerSpawner.gid = os.getgid()
+c.DockerSpawner.volumnes = {
+	'/home/{username}': '/home/jovyan'
+}
+# Avoid "Permission denied" by making sure ownership works
+c.DockerSpawner.extra_create_kwargs.update({
+    'user': f"{os.getuid()}:{os.getgid()}"
+})
 #------------------------------------------------------------------------------
 # Application(SingletonConfigurable) configuration
 #------------------------------------------------------------------------------
@@ -1478,8 +1490,10 @@ c = get_config()  #noqa
 #  takes longer than this. start should return when the server process is started
 #  and its location is known.
 #  Default: 60
-c.Spawner.start_timeout = 120
-
+c.Spawner.start_timeout = 600
+c.Spawner.http_timeout = 600
+c.DockerSpawner.start_timeout = 600
+c.DockerSpawner.http_timeout = 600
 #------------------------------------------------------------------------------
 # Authenticator(LoggingConfigurable) configuration
 #------------------------------------------------------------------------------

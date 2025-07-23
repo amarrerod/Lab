@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
 
   jupyterhub:
-    image: jupyterhub/jupyterhub
+    image: quay.io/jupyter/pytorch-notebook:cuda12-python-3.11.8
     container_name: jupyterhub
     volumes:
       - /etc/passwd:/etc/passwd:ro
