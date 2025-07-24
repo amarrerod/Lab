@@ -9,12 +9,19 @@ c.DockerSpawner.image = os.environ["DOCKER_NOTEBOOK_IMAGE"]
 network_name = os.environ["DOCKER_NETWORK_NAME"]
 c.DockerSpawner.use_internal_ip = True
 c.DockerSpawner.network_name = network_name
+c.DockerSpawner.environment = {
+    'JUPYTERHUB_API_URL': 'http://lab:8081/jupyterhub/hub/api',
+}
+c.JupyterHub.hub_connect_ip = 'jupyterhub'  # Hub container DNS name on the network
+c.DockerSpawner.environment = {
+    'JUPYTERHUB_API_URL': 'http://jupyterhub:8081/jupyterhub/hub/api',
+}
 
 # Explicitly set notebook directory because we'll be mounting a volume to it.
 # Most `jupyter/docker-stacks` *-notebook images run the Notebook server as
 # user `jovyan`, and set the notebook directory to `/home/jovyan/work`.
 # We follow the same convention.
-notebook_dir = "/home/jovyan/work"
+notebook_dir = "/home/jovyan"
 c.DockerSpawner.notebook_dir = notebook_dir
 
 # Mount the real user's Docker volume on the host to the notebook user's
@@ -34,8 +41,6 @@ c.DockerSpawner.environment = {
 c.DockerSpawner.extra_create_kwargs = {"user": "root"}  # Start as root to chown
 c.DockerSpawner.user = "jovyan"  # Switch to jovyan after chown
 
-# Remove containers once they are stopped
-c.DockerSpawner.remove = True
 # For debugging arguments passed to spawned containers
 c.DockerSpawner.debug = True
 
