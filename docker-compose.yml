@@ -10,12 +10,14 @@ services:
       - "80:80"
     depends_on:
       - jupyterhub
-      - ollama
-      - chat
+      #- ollama
+      #- chat
     restart: unless-stopped
 
   jupyterhub:
-    image: quay.io/jupyter/pytorch-notebook:cuda12-python-3.11.8
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: jupyterhub
     volumes:
       - /etc/passwd:/etc/passwd:ro
@@ -23,46 +25,55 @@ services:
       - /etc/shadow:/etc/shadow:ro
       - /home:/home
       - ./jupyterhub:/srv/jupyterhub
+      - /var/run/docker.sock:/var/run/docker.sock
+
     networks:
       - lab
     expose:
       - "8000"
     restart: unless-stopped
+    environment:
+      # This username will be a JupyterHub admin
+      JUPYTERHUB_ADMIN: admin
+      # All containers will join this network
+      DOCKER_NETWORK_NAME: lab
+      # JupyterHub will spawn this Notebook image for users
+      DOCKER_NOTEBOOK_IMAGE:  quay.io/jupyter/pytorch-notebook:cuda12-python-3.12
     user: root
 
-  ollama:
-    image: ollama/ollama
-    container_name: ollama
-    networks:
-      - lab
-    expose:
-      - "11434"
-    volumes:
-      - ollama_data:/home/ollama
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
-    runtime: nvidia
-    restart: unless-stopped
+#   ollama:
+#     image: ollama/ollama
+#     container_name: ollama
+#     networks:
+#       - lab
+#     expose:
+#       - "11434"
+#     volumes:
+#       - ollama_data:/home/ollama
+#     deploy:
+#       resources:
+#         reservations:
+#           devices:
+#             - capabilities: [gpu]
+#     runtime: nvidia
+#     restart: unless-stopped
 
-  chat:
-    image: ghcr.io/open-webui/open-webui:main
-    container_name: chat
-    environment:
-      - OLLAMA_API_BASE_URL=http://ollama:11434
-      - WEBUI_BASE_URL=/chat/
-    networks:
-      - lab
-    expose:
-      - "8080"
-    depends_on:
-      - ollama
-    restart: unless-stopped
+#   chat:
+#     image: ghcr.io/open-webui/open-webui:main
+#     container_name: chat
+#     environment:
+#       - OLLAMA_API_BASE_URL=http://ollama:11434
+#       - WEBUI_BASE_URL=/chat/
+#     networks:
+#       - lab
+#     expose:
+#       - "8080"
+#     depends_on:
+#       - ollama
+#     restart: unless-stopped
 
-volumes:
-  ollama_data:
+# volumes:
+#   ollama_data:
 
 networks:
   lab:
