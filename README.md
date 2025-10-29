@@ -69,6 +69,3 @@ lab/
 This project is licensed under the [MIT License](LICENSE).
 
 ```
-
-Would you like me to make it a bit more **developer-focused** (e.g., with environment variables and deployment details), or keep it minimal like this?
-```
